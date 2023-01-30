@@ -303,6 +303,9 @@ def quicklook_continuum_imaging(config_filename,
 
     t0 = datetime.datetime.now()
 
+    casalog.post(f"Imaging the following fields: {target_fields}.")
+    print(f"Imaging the following fields: {target_fields}.")
+
     # Loop through targets and line SPWs
     for target_field in target_fields.split(","):
 
@@ -326,9 +329,11 @@ def quicklook_continuum_imaging(config_filename,
             #     casalog.post(f"All data flagged for {this_imagename}. Skipping")
             #     continue
 
-            # NOTE: Rounding will only be reasonable for arcsec units with our L-band setup.
-            # Could easily fail on ~<0.1 arcsec cell sizes.
-            cell_size[thisspw] = [image_settings[2]['value'], image_settings[2]['unit']]
+            # NOTE: The advise output seems to be consistently too large for the actual
+            # SMA synthesized beam. We'll divide by 2 here as a lazy patch.
+            # This was first tested  on an EXT track. SUB/COM may be fine.
+            cell_size[thisspw] = [image_settings[2]['value'] * 0.5,
+                                  image_settings[2]['unit']]
 
             # No point in estimating image size for an empty SPW.
             if image_settings[2]['value'] == 0.:
