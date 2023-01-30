@@ -1,6 +1,7 @@
 
 import os
 import datetime
+import numpy as np
 
 from casatasks import tclean, rmtables, exportfits
 
@@ -12,6 +13,9 @@ from casatools import msmetadata
 
 casalog = logsink()
 
+
+from quicklook_sma.utilities import (read_config, get_targetfield, get_mosaicfields,
+                                    get_gainfield, get_bandpassfield)
 
 def cleanup_misc_quicklook(filename, remove_residual=True,
                            remove_psf=True,
@@ -237,7 +241,7 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
 #     casalog.post(f"Quicklook line imaging took {t1 - t0}")
 
 
-def quicklook_continuum_imaging(myvis, contspw_dict,
+def quicklook_continuum_imaging(config_filename,
                                 niter=0, nsigma=5., imsize_max=800,
                                 overwrite_imaging=False,
                                 export_fits=True):
@@ -245,17 +249,12 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
 
-    raise NotImplementedError("")
+    this_config = read_config(config_filename)
 
     if not os.path.exists("quicklook_imaging"):
         os.mkdir("quicklook_imaging")
 
-
-    # Select only the continuum SPWs (in case there are any line SPWs).
-    continuum_spws = []
-    for thisspw in contspw_dict:
-        if "continuum" in contspw_dict[thisspw]['label']:
-                continuum_spws.append(str(thisspw))
+    myvis = this_config['myvis']
 
     # Select our target fields. We will loop through
     # to avoid the time + memory needed for mosaics.
@@ -266,22 +265,45 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
     myms.open(myvis)
     mymsmd = myms.metadata()
 
-    target_fields = mymsmd.fieldsforintent("*TARGET*", True)
+    # Get total SPWs and map to sidebands:
+    # Don't expect changes in the number of SPWs.
+    spw_nums = mymsmd.spwsforscan(1)
+
+    meanfreqs_ghz = np.array([mymsmd.meanfreq(val) for val in spw_nums]) / 1e9
 
     mymsmd.close()
     myms.close()
 
+    # Classify sidebands by gaps larger than 2 and a bit GHz
+    # as each chunk is ~2 GHz.
+    continuum_sidebands = []
+    max_diff_ghz = 2.2
+    min_spw = spw_nums[0]
+    for ii, this_diff_freq in enumerate(np.abs(np.diff(meanfreqs_ghz))):
+        if this_diff_freq >= max_diff_ghz:
+            max_spw = spw_nums[ii]
+            continuum_sidebands.append(f"{min_spw}~{max_spw}")
+            min_spw = spw_nums[ii+1]
+
+    # Append the last range:
+    continuum_sidebands.append(f"{min_spw}~{spw_nums[-1]}")
+
+    if this_config['is_mosaic']:
+        target_fields = get_mosaicfields(this_config)
+    else:
+        target_fields = get_targetfield(this_config)
+
     t0 = datetime.datetime.now()
 
     # Loop through targets and line SPWs
-    for target_field in target_fields:
+    for target_field in target_fields.split(","):
 
         casalog.post(f"Quick look imaging of field {target_field}")
 
         cell_size = {}
         imsizes = []
 
-        for thisspw in continuum_spws:
+        for thisspw in continuum_sidebands:
 
             # Ask for cellsize
             this_im = imager()
@@ -305,13 +327,16 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
                 continue
 
             # For the image size, we will do an approx scaling was
-            # theta_PB = 45 / nu (arcmin)
-            this_msmd = msmetadata()
-            this_msmd.open(myvis)
-            mean_freq = this_msmd.chanfreqs(int(thisspw)).mean() / 1.e9 # Hz to GHz
-            this_msmd.close()
+            mean_spw = int(0.5 * (int(thisspw.split("~")[-1]) + int(thisspw.split("~")[0])))
+            mean_freq = meanfreqs_ghz[mean_spw]
 
-            approx_pbsize = 1.2 * (45. / mean_freq) * 60 # arcsec
+            lambda_m = (3e8 / (mean_freq * 1e9))
+            dish_diameter_m = 6.
+            rad_to_arcsec = 206265.
+
+            approx_pbsize = 1.2 * (lambda_m / dish_diameter_m) * rad_to_arcsec
+            # Add padding. This seems to be moderately underestimated.
+            approx_pbsize *= 1.3
             approx_imsize = synthutil.getOptimumSize(int(approx_pbsize / image_settings[2]['value']))
             imsizes.append(approx_imsize)
 
@@ -321,7 +346,7 @@ def quicklook_continuum_imaging(myvis, contspw_dict,
 
         this_imsize = min(imsize_max, max(imsizes))
 
-        for thisspw in continuum_spws:
+        for thisspw in continuum_sidebands:
 
             casalog.post(f"Quick look imaging of field {target_field} SPW {thisspw}")
 
