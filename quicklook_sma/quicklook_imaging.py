@@ -244,7 +244,8 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
 def quicklook_continuum_imaging(config_filename,
                                 niter=0, nsigma=5., imsize_max=800,
                                 overwrite_imaging=False,
-                                export_fits=True):
+                                export_fits=True,
+                                image_type='target'):
     '''
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
@@ -288,10 +289,17 @@ def quicklook_continuum_imaging(config_filename,
     # Append the last range:
     continuum_sidebands.append(f"{min_spw}~{spw_nums[-1]}")
 
-    if this_config['is_mosaic']:
-        target_fields = get_mosaicfields(this_config)
+    if image_type == 'target':
+        if this_config['is_mosaic']:
+            target_fields = get_mosaicfields(this_config)
+        else:
+            target_fields = get_targetfield(this_config)
+    elif image_type == 'calibrator':
+        target_fields = [get_bandpassfield(this_config),
+                         get_gainfield(this_config)]
+        target_fields = ",".join(target_fields)
     else:
-        target_fields = get_targetfield(this_config)
+        raise ValueError(f"image_type must be 'target' or 'calibrator'. Received {image_type}")
 
     t0 = datetime.datetime.now()
 
