@@ -242,7 +242,9 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
 
 
 def quicklook_continuum_imaging(config_filename,
-                                niter=0, nsigma=5., imsize_max=800,
+                                nmajor=1,
+                                niter=0, nsigma=5.,
+                                imsize_max=800,
                                 overwrite_imaging=False,
                                 export_fits=True,
                                 image_type='target',
@@ -391,6 +393,7 @@ def quicklook_continuum_imaging(config_filename,
 
             this_nsigma = nsigma
             this_niter = niter
+            this_nmajor = nmajor
 
             # Clean up any possible imaging remnants first
             rmtables(f"{this_imagename}*")
@@ -406,6 +409,7 @@ def quicklook_continuum_imaging(config_filename,
                    robust=0.0,
                    niter=this_niter,
                    nsigma=this_nsigma,
+                   nmajor=this_nmajor,
                    fastnoise=True,
                    imagename=this_imagename,
                    pblimit=this_pblim)
