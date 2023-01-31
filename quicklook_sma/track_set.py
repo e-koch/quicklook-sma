@@ -301,3 +301,23 @@ def make_field_plots(config_filename, folder, output_folder,
 
     # Make the linking files into the same folder.
     make_all_html_links(flagging_sheet_link, output_folder, field_intents, meta_dict_0)
+
+
+def make_all_quicklook_plots(folder="quicklook_imaging",
+                             output_folder="quicklook_imaging_figures"):
+
+    # Generate the quicklook plots.
+    target_dict, summary_filenames = make_quicklook_figures(folder, output_folder)
+
+    # Identify if these are continuum or line plots
+    # The line plots will tend to be larger, so we just want to
+    # decrease the number of fields per page for the lines.
+    filenames = glob(f"{output_folder}/*.html")
+    if any(["continuum" in filename for filename in filenames]):
+        fields_per_page = 5
+    else:
+        fields_per_page = 3
+
+    make_quicklook_html_links("", output_folder, target_dict,
+                              summary_filenames,
+                              fields_per_page=fields_per_page)
