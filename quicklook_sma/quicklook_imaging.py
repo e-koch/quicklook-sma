@@ -245,15 +245,16 @@ def quicklook_continuum_imaging(config_filename,
                                 niter=0, nsigma=5., imsize_max=800,
                                 overwrite_imaging=False,
                                 export_fits=True,
-                                image_type='target'):
+                                image_type='target',
+                                output_folder="quicklook_imaging"):
     '''
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
 
     this_config = read_config(config_filename)
 
-    if not os.path.exists("quicklook_imaging"):
-        os.mkdir("quicklook_imaging")
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
 
     myvis = this_config['myvis']
 
