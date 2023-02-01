@@ -3,10 +3,9 @@ from glob import glob
 import os
 import warnings
 
-from astropy.table import table
 import numpy as np
 
-from qaplotter.utils import load_spwdict, read_field_data_tables
+from qaplotter.utils import read_field_data_tables
 
 from qaplotter.field_plots import target_scan_figure, calibrator_scan_figure
 
@@ -312,12 +311,88 @@ def make_all_quicklook_plots(folder="quicklook_imaging",
     # Identify if these are continuum or line plots
     # The line plots will tend to be larger, so we just want to
     # decrease the number of fields per page for the lines.
-    filenames = glob(f"{output_folder}/*.html")
-    if any(["continuum" in filename for filename in filenames]):
-        fields_per_page = 5
-    else:
-        fields_per_page = 3
+    # filenames = glob(f"{output_folder}/*.html")
+    # if any(["continuum" in filename for filename in filenames]):
+
+    # Up this number as we're currently doing per sideband.
+    # Only up to 4 images per field.
+    fields_per_page = 10
 
     make_quicklook_html_links("", output_folder, target_dict,
                               summary_filenames,
                               fields_per_page=fields_per_page)
+
+
+
+def make_all_plots(config_filename=None,
+                   folder_fields="scan_plots_txt",
+                   output_folder_fields="scan_plots_QAplots",
+                   folder_cals="final_caltable_txt",
+                   output_folder_cals="final_caltable_QAplots",
+                   folder_qlimg="quicklook_imaging",
+                   output_folder_qlimg="quicklook_imaging_figures",
+                   folder_cal_qlimg="quicklook_calibrator_imaging",
+                   output_folder_cal_qlimg="quicklook_calibrator_imaging_figures",
+                   save_fieldnames=True,
+                   flagging_sheet_link=None,
+                   corrs=['XX', 'YY'],
+                   manualflag_tablename='manualflag_check.html',
+                   ):
+    '''
+
+    Parameters
+    ----------
+    folder_fields : str, optional
+        Folder where the txt files per field are located.
+    output_folder_fields : str, optional
+        Output folder to place the interactive HTML figures per field.
+    folder_BPs : str, optional
+        Folder where the txt files for bandpass solutions per SPW are located.
+    output_folder_BPs : str, optional
+        Output folder to place the interactive HTML figures per bandpass SPW solution.
+    flagging_sheet_link : str, optional
+        Link to the sheet where manual flags can be added.
+    corrs : list, optional
+        Give which correlations to show in the plots. Default is ['XX', 'YY']. To show
+        the cross terms, give: ['LL', 'RR', 'LR', 'RL'].
+
+    '''
+
+    ms_info_dict = {}
+
+    this_config = read_config(config_filename)
+    msname = this_config['myvis']
+
+    ms_info_dict['vis'] = msname
+
+    make_html_homepage(".", ms_info_dict,
+                       flagging_sheet_link=flagging_sheet_link,
+                       manualflag_tablename=manualflag_tablename)
+
+    # make_field_plots(config_filename, folder_fields, output_folder_fields,
+    #                  save_fieldnames=save_fieldnames,
+    #                  corrs=corrs,
+    #                  flagging_sheet_link=None,)
+
+    if os.path.exists(folder_cals):
+        # Calibration plots
+        make_all_cal_plots(folder_cals, output_folder_cals)
+
+    else:
+        print("No cal plot txt files were found. Skipping.")
+
+    if os.path.exists(folder_qlimg):
+        # Quicklook target images
+        make_all_quicklook_plots(folder_qlimg,
+                                 output_folder_qlimg)
+
+    else:
+        print("No quicklook images were found. Skipping.")
+
+    if os.path.exists(folder_cal_qlimg):
+        # Quicklook target images
+        make_all_quicklook_plots(folder_cal_qlimg,
+                                 output_folder_cal_qlimg)
+
+    else:
+        print("No quicklook calibrator images were found. Skipping.")

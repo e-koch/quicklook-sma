@@ -9,10 +9,10 @@ from quicklook_sma.utilities import read_config
 from quicklook_sma import make_qa_tables, make_all_caltable_txt
 
 # Info for SPW setup
-from lband_pipeline.spw_setup import (create_spw_dict)
+# from lband_pipeline.spw_setup import (create_spw_dict)
 
 # Quicklook imaging
-from lband_pipeline.quicklook_imaging import quicklook_continuum_imaging
+from quicklook_sma.quicklook_imaging import quicklook_continuum_imaging
 
 
 from casatools import logsink
@@ -28,11 +28,6 @@ sma_config = read_config(config_filename)
 
 casalog.post(f"Making quicklook products for: {sma_config['myvis']}")
 
-# Get the SPW mapping for the continuum MS.
-spwdict_filename = "spw_definitions.npy"
-contspw_dict = create_spw_dict(myvis, save_spwdict=True,
-                               spwdict_filename=spwdict_filename)
-
 # Created by hifv_exportdata. Must exist to run!
 products_folder = "products"
 
@@ -45,23 +40,35 @@ if not os.path.exists(products_folder):
 run_quicklook = True
 
 # Run dirty imaging only for a quicklook
-# if run_quicklook:
-#     # NOTE: We will attempt a very light clean as it can really highlight
-#     # which SPWs have significant RFI.
-#     quicklook_continuum_imaging(myvis, contspw_dict,
-#                                 niter=0, nsigma=5.)
+if run_quicklook:
 
-#     os.system("cp -r {0} {1}".format('quicklook_imaging', products_folder))
+    # Dirty images per sideband per target.
+    quicklook_continuum_imaging(config_filename,
+                                image_type='target',
+                                niter=0, nsigma=5.,
+                                output_folder="quicklook_imaging")
+
+
+    # Gain and bandpass cals. No imaging of the flux cal by default.
+    # It's helpful to clean for a few iterations on point source
+    # calibrators.
+    quicklook_continuum_imaging(config_filename,
+                                image_type='calibrator',
+                                niter=20, nsigma=5.,
+                                output_folder="quicklook_calibrator_imaging")
+
+    os.system("cp -r {0} {1}".format('quicklook_imaging', products_folder))
+    os.system("cp -r {0} {1}".format('quicklook_calibrator_imaging', products_folder))
 
 # ----------------------------
 # Now make additional QA plots:
 # -----------------------------
 
 # Calibration table:
-make_all_caltable_txt(sma_config)
+make_all_caltable_txt(config_filename)
 
 # Per field outputs:
-make_qa_tables(sma_config,
+make_qa_tables(config_filename,
                 output_folder='scan_plots_txt',
                 outtype='txt',
                 overwrite=False,

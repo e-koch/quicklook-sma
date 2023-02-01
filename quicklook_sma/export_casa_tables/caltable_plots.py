@@ -3,9 +3,8 @@ import os
 from glob import glob
 import numpy as np
 
-from casatools import logsink
+import quicklook_sma.utilities as utils
 
-casalog = logsink()
 
 CALTABLE_MAPPING = {'bandpass_amp': {'output_folder': 'final_caltable_txt',
                                 'search_string': '*.bandpass.solnorm_true.bcal',
@@ -66,6 +65,10 @@ def make_caltable_txt(ms_active, caltable_type):
     '''
 
     caltable_values = CALTABLE_MAPPING[caltable_type]
+
+    from casatools import logsink
+
+    casalog = logsink()
 
     # from taskinit import tb, casalog
     from casatools import table
@@ -131,9 +134,12 @@ def make_caltable_txt(ms_active, caltable_type):
             casalog.post("File {} already exists. Skipping".format(thisplotfile))
 
 
-def make_all_caltable_txt(sma_config):
+def make_all_caltable_txt(config_file):
 
-    msname = sma_config['myvis']
+    # Read in config settings:
+    this_config = utils.read_config(config_file)
+
+    msname = this_config['myvis']
 
     for key in CALTABLE_MAPPING:
         make_caltable_txt(msname, key)

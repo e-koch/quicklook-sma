@@ -3,16 +3,6 @@ import os
 import datetime
 import numpy as np
 
-from casatasks import tclean, rmtables, exportfits
-
-from casatools import logsink
-from casatools import ms
-from casatools import imager
-from casatools import synthesisutils
-from casatools import msmetadata
-
-casalog = logsink()
-
 
 from quicklook_sma.utilities import (read_config, get_targetfield, get_mosaicfields,
                                     get_gainfield, get_bandpassfield)
@@ -23,6 +13,8 @@ def cleanup_misc_quicklook(filename, remove_residual=True,
     '''
     Reduce number of files that aren't needed for QA.
     '''
+
+    from casatasks import rmtables
 
     rmtables(f"{filename}.model")
     rmtables(f"{filename}.sumwt")
@@ -253,6 +245,16 @@ def quicklook_continuum_imaging(config_filename,
     Per-SPW MFS, nterm=1, dirty images of the targets
     '''
 
+    from casatasks import tclean, rmtables, exportfits
+
+    from casatools import ms
+    from casatools import imager
+    from casatools import synthesisutils
+
+    from casatools import logsink
+
+    casalog = logsink()
+
     this_config = read_config(config_filename)
 
     if not os.path.exists(output_folder):
@@ -368,7 +370,7 @@ def quicklook_continuum_imaging(config_filename,
 
             target_field_label = target_field.replace('-', '_')
 
-            this_imagename = f"quicklook_imaging/quicklook-{target_field_label}-spw{thisspw}-continuum-{myvis}"
+            this_imagename = f"{output_folder}/quicklook-{target_field_label}-spw{thisspw}-continuum-{myvis}"
 
             if export_fits:
                 check_exists = os.path.exists(f"{this_imagename}.image.fits")
@@ -409,7 +411,7 @@ def quicklook_continuum_imaging(config_filename,
                    robust=0.0,
                    niter=this_niter,
                    nsigma=this_nsigma,
-                   nmajor=this_nmajor,
+                #    nmajor=this_nmajor,
                    fastnoise=True,
                    imagename=this_imagename,
                    pblimit=this_pblim)
@@ -422,8 +424,8 @@ def quicklook_continuum_imaging(config_filename,
 
             # Clean-up extra imaging products if they are not needed.
             cleanup_misc_quicklook(this_imagename, remove_psf=True,
-                                    remove_residual=this_niter == 0,
-                                    remove_image=True if export_fits else False)
+                                   remove_residual=this_niter != 0,
+                                   remove_image=True if export_fits else False)
 
     t1 = datetime.datetime.now()
 

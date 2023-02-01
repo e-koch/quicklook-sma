@@ -9,4 +9,7 @@ from ._astropy_init import *   # noqa
 from .export_casa_tables.caltable_plots import make_all_caltable_txt, make_caltable_txt
 from .export_casa_tables.qa_plot_tools import make_qa_tables
 
-
+from .track_set import (make_all_plots,
+                        make_all_cal_plots,
+                        make_field_plots,
+                        make_quicklook_figures)

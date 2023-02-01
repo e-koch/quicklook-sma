@@ -11,10 +11,6 @@ import numpy as np
 
 import quicklook_sma.utilities as utils
 
-from casatools import logsink
-
-casalog = logsink()
-
 
 def make_qa_tables(config_file,
                    output_folder='scan_plots_txt',
@@ -28,6 +24,10 @@ def make_qa_tables(config_file,
     `make_qa_scan_figures` to make fewer but larger tables.
 
     '''
+
+    from casatools import logsink
+
+    casalog = logsink()
 
     from casatools import table
     tb = table()
