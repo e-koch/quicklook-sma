@@ -287,16 +287,19 @@ def make_field_plots(config_filename, folder, output_folder,
             warnings.warn("Unable to make summary amp-time figure."
                           f" Raise exception {exc}")
 
-        try:
-            fig_summ_freq = target_summary_ampfreq_figure(target_fields, folder,
-                                                        corrs=corrs,
-                                                        spw_dict=None,
-                                                        show_linesonly=False)
-            out_html_name = f"target_ampfreq_summary_plotly_interactive.html"
-            fig_summ_freq.write_html(f"{output_folder}/{out_html_name}")
-        except Exception as exc:
-            warnings.warn("Unable to make summary amp-freq figure."
-                          f" Raise exception {exc}")
+        # Disabled for now. There's too many channels for this to be
+        # efficient for viewing.
+
+        # try:
+        #     fig_summ_freq = target_summary_ampfreq_figure(target_fields, folder,
+        #                                                 corrs=corrs,
+        #                                                 spw_dict=None,
+        #                                                 show_linesonly=False)
+        #     out_html_name = f"target_ampfreq_summary_plotly_interactive.html"
+        #     fig_summ_freq.write_html(f"{output_folder}/{out_html_name}")
+        # except Exception as exc:
+        #     warnings.warn("Unable to make summary amp-freq figure."
+        #                   f" Raise exception {exc}")
 
     # Make the linking files into the same folder.
     make_all_html_links(flagging_sheet_link, output_folder, field_intents, meta_dict_0)
