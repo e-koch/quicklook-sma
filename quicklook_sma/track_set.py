@@ -340,7 +340,6 @@ def make_all_plots(config_filename=None,
                    flagging_sheet_link=None,
                    corrs=['XX', 'YY'],
                    manualflag_tablename='manualflag_check.html',
-                   chans_to_show=128,
                    ):
     '''
 
