@@ -340,6 +340,7 @@ def make_all_plots(config_filename=None,
                    flagging_sheet_link=None,
                    corrs=['XX', 'YY'],
                    manualflag_tablename='manualflag_check.html',
+                   chans_to_show=128,
                    ):
     '''
 
@@ -358,7 +359,6 @@ def make_all_plots(config_filename=None,
     corrs : list, optional
         Give which correlations to show in the plots. Default is ['XX', 'YY']. To show
         the cross terms, give: ['LL', 'RR', 'LR', 'RL'].
-
     '''
 
     ms_info_dict = {}
@@ -372,10 +372,10 @@ def make_all_plots(config_filename=None,
                        flagging_sheet_link=flagging_sheet_link,
                        manualflag_tablename=manualflag_tablename)
 
-    # make_field_plots(config_filename, folder_fields, output_folder_fields,
-    #                  save_fieldnames=save_fieldnames,
-    #                  corrs=corrs,
-    #                  flagging_sheet_link=None,)
+    make_field_plots(config_filename, folder_fields, output_folder_fields,
+                     save_fieldnames=save_fieldnames,
+                     corrs=corrs,
+                     flagging_sheet_link=None)
 
     if os.path.exists(folder_cals):
         # Calibration plots

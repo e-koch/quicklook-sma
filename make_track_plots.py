@@ -67,12 +67,30 @@ if run_quicklook:
 # Calibration table:
 make_all_caltable_txt(config_filename)
 
+# chans_to_show : int
+# Number of channels to keep for visualizing in plots. Default is to average down
+# to 128 per chunk/SPW. CHOOSING LARGER VALUES WILL RESULT IN LARGE DATA FILES!
+chans_to_show = 128
+
+this_config = read_config(config_filename)
+
+# Calculate the number of channels from the given rechunk factor
+chans_in_ms = 16384 / int(this_config['rechunk'])
+chans_to_avg = chans_in_ms / chans_to_show
+print(f"Averaging channels by {chans_to_avg} from {chans_in_ms} to {chans_to_show}")
+casalog.post(f"Averaging channels by {chans_to_avg} from {chans_in_ms} to {chans_to_show}")
+
+chans_to_avg = int(chans_to_avg)
+
 # Per field outputs:
+# Avg over all channels over time
+# Avg over
 make_qa_tables(config_filename,
                 output_folder='scan_plots_txt',
                 outtype='txt',
                 overwrite=False,
-                chanavg=16384,)
+                chanavg_vs_time=16384,
+                chanavg_vs_chan=chans_to_avg)
 
 # make_all_flagsummary_data(myvis, output_folder='perfield_flagfraction_txt')
 
