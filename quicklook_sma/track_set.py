@@ -23,7 +23,9 @@ from quicklook_sma.html_linking import (make_all_html_links, make_html_homepage,
                                         make_caltable_all_html_links,
                                         make_quicklook_html_links,
                                         make_html_casalog_page,
-                                        make_html_manualflag_page)
+                                        make_html_manualflag_page,
+                                        make_html_reductionscript_page,
+                                        make_html_fluxes_page)
 
 from quicklook_sma.utilities import read_config, get_calfields, get_field_intents
 
@@ -334,7 +336,8 @@ def make_all_plots(config_filename=None,
                    save_fieldnames=True,
                    corrs=['XX', 'YY'],
                    logfile_name='casa_reduction.log',
-                   flagfile_name='manual_flags.txt'
+                   flagfile_name='manual_flags.txt',
+                   script_name='casa_reduction_script.py'
                    ):
     '''
 
@@ -372,11 +375,15 @@ def make_all_plots(config_filename=None,
 
     ms_info_dict['vis'] = msname
 
-    make_html_homepage(".", ms_info_dict)
+    make_html_homepage(".", config_filename, ms_info_dict)
+
+    make_html_fluxes_page(".")
 
     make_html_casalog_page(".", logfile_name=logfile_name)
 
     make_html_manualflag_page(".", flagfile_name=flagfile_name)
+
+    make_html_reductionscript_page(".", script_name=script_name)
 
     make_field_plots(config_filename, folder_fields, output_folder_fields,
                      save_fieldnames=save_fieldnames,

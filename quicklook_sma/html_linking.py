@@ -26,9 +26,13 @@ def generate_webserver_track_link():
     track_links['Sci Images'] = "quicklook_imaging_figures/index.html"
     track_links['Cal Images'] = "quicklook_calibrator_imaging/index.html"
 
+    track_links['Flux Scaling Plots'] = "flux_scaling.html"
+
     track_links['CASA Log'] = "casa_pipeline.html"
 
     track_links['Manual Flags'] = "casa_manualflags.html"
+
+    track_links['CASA Script'] = "casa_script.html"
 
     track_links['Field Names'] = "scan_plots_QAplots/fieldnames.txt"
 
@@ -36,7 +40,7 @@ def generate_webserver_track_link():
     return track_links
 
 
-def make_index_html_homepage(ms_info_dict,):
+def make_index_html_homepage(config_filename, ms_info_dict,):
     '''
     Home page for the track with links to the weblogs, QA plots, etc.
     '''
@@ -59,11 +63,11 @@ def make_index_html_homepage(ms_info_dict,):
     html_string += f'<h2>{ms_info_dict["vis"]}</h2>\n'
 
 
-    # Embed the weblog into the main page.
-    # html_string += '\n'
-    # html_string += '<iframe src="weblog/html/index.html" height="100%" width=90%>\n'
-    # html_string += 'If you are seeing this, you need a browser understands IFrames.\n'
-    # html_string += '</iframe>\n'
+    # Embed the config file inputs into the main page.
+    html_string += '\n'
+    html_string += f'<iframe src="{config_filename}" height="100%" width=90%>\n'
+    html_string += 'If you are seeing this, you need a browser understands IFrames.\n'
+    html_string += '</iframe>\n'
 
     html_string += '</div>\n\n'
 
@@ -72,7 +76,7 @@ def make_index_html_homepage(ms_info_dict,):
     return html_string
 
 
-def make_html_homepage(folder, ms_info_dict,):
+def make_html_homepage(folder, config_filename, ms_info_dict,):
 
     mypath = Path(folder)
 
@@ -90,7 +94,7 @@ def make_html_homepage(folder, ms_info_dict,):
     if index_file.exists():
         index_file.unlink()
 
-    print(make_index_html_homepage(ms_info_dict),
+    print(make_index_html_homepage(config_filename, ms_info_dict),
           file=open(index_file, 'a'))
 
 
@@ -898,3 +902,125 @@ def make_html_manualflag_page(folder, flagfile_name='manual_flags.txt'):
           file=open(index_file, 'a'))
 
 
+def make_reductionscript_html_page(script_name='casa_reduction_script.py'):
+    '''
+    Home page for the track with links to the weblogs, QA plots, etc.
+    '''
+
+    html_string = make_html_preamble()
+
+    link_locations = generate_webserver_track_link()
+
+    html_string += '<div class="navbar">\n'
+
+    for linkname in link_locations:
+
+        html_string += f'    <a href="{link_locations[linkname]}">{linkname}</a>\n'
+
+    html_string += "</div>\n\n"
+
+    # Add in MS info:
+    html_string += '<div class="content" id="basic">\n'
+    html_string += f'<h2>Script used for reduction</h2>\n'
+
+
+    # Embed the weblog into the main page.
+    html_string += '\n'
+    html_string += f'<iframe src="{script_name}" height="100%" width=90%>\n'
+    html_string += 'If you are seeing this, you need a browser understands IFrames.\n'
+    html_string += '</iframe>\n'
+
+    html_string += '</div>\n\n'
+
+    html_string += make_html_suffix()
+
+    return html_string
+
+
+def make_html_reductionscript_page(folder, script_name='casa_reduction_script.py'):
+
+    mypath = Path(folder)
+
+    # CSS style
+    css_file = mypath / "qa_plot.css"
+
+    if css_file.exists():
+        css_file.unlink()
+
+    print(css_page_style(), file=open(css_file, 'a'))
+
+    # index file
+    index_file = mypath / "casa_script.html"
+
+    if index_file.exists():
+        index_file.unlink()
+
+    print(make_reductionscript_html_page(script_name),
+          file=open(index_file, 'a'))
+
+
+def make_fluxfit_html_page(folder_name='fluxfit_plots'):
+    '''
+    Home page for the track with links to the weblogs, QA plots, etc.
+    '''
+
+    html_string = make_html_preamble()
+
+    link_locations = generate_webserver_track_link()
+
+    html_string += '<div class="navbar">\n'
+
+    for linkname in link_locations:
+
+        html_string += f'    <a href="{link_locations[linkname]}">{linkname}</a>\n'
+
+    html_string += "</div>\n\n"
+
+    # Loop through the plots and embed them here:
+    from glob import glob
+
+    all_plotfiles = glob(f"{folder_name}/*.png")
+
+    for plot_filename in all_plotfiles:
+
+        print(plot_filename)
+
+        this_filename = plot_filename.split("/")[1]
+
+        html_string += '<div class="content" id="basic">\n'
+        html_string += f'<h3>{this_filename}</h3>\n'
+
+
+        # Embed the weblog into the main page.
+        html_string += '\n'
+        html_string += f'<iframe src="{plot_filename}" height="50%" width=90%>\n'
+        html_string += 'If you are seeing this, you need a browser understands IFrames.\n'
+        html_string += '</iframe>\n'
+
+        html_string += '</div>\n\n'
+
+    html_string += make_html_suffix()
+
+    return html_string
+
+
+def make_html_fluxes_page(folder, folder_name='fluxfit_plots'):
+
+    mypath = Path(folder)
+
+    # CSS style
+    css_file = mypath / "qa_plot.css"
+
+    if css_file.exists():
+        css_file.unlink()
+
+    print(css_page_style(), file=open(css_file, 'a'))
+
+    # index file
+    index_file = mypath / "flux_scaling.html"
+
+    if index_file.exists():
+        index_file.unlink()
+
+    print(make_fluxfit_html_page(folder_name),
+          file=open(index_file, 'a'))
