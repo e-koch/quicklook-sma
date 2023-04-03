@@ -5,7 +5,6 @@ import warnings
 
 import numpy as np
 
-from qaplotter.utils import read_field_data_tables
 
 from qaplotter.field_plots import target_scan_figure, calibrator_scan_figure
 
@@ -16,17 +15,20 @@ from qaplotter.quicklook_target_imaging import make_quicklook_figures
 
 from qaplotter.bp_plots import bp_amp_phase_figures
 
-from qaplotter.amp_phase_cal_plots import (phase_gain_figures, amp_gain_time_figures,
+from qaplotter.amp_phase_cal_plots import (phase_gain_figures,
+                                           amp_gain_time_figures,
                                            amp_gain_freq_figures)
 
-from qaplotter.html_linking import (make_all_html_links, make_html_homepage,
-                           make_caltable_all_html_links,
-                           make_quicklook_html_links)
-
+from quicklook_sma.html_linking import (make_all_html_links, make_html_homepage,
+                                        make_caltable_all_html_links,
+                                        make_quicklook_html_links,
+                                        make_html_casalog_page,
+                                        make_html_manualflag_page)
 
 from quicklook_sma.utilities import read_config, get_calfields, get_field_intents
 
-from quicklook_sma.read_data_sma import (read_bpcal_data_tables,
+from quicklook_sma.read_data_sma import (read_field_data_tables,
+                                read_bpcal_data_tables,
                                 read_BPinitialgain_data_tables,
                                 read_phaseshortgaincal_data_tables,
                                 read_ampgaincal_time_data_tables,
@@ -119,22 +121,22 @@ def make_all_cal_plots(folder, output_folder):
             fig_names[f"{label} {i+1}"] = out_html_name
 
     # BLcal
-    table_dict, meta_dict = read_blcal_freq_data_tables(folder)
+    # table_dict, meta_dict = read_blcal_freq_data_tables(folder)
 
-    # Check if files exist. If not, skip.
-    key0 = list(table_dict.keys())[0]
-    if len(table_dict[key0]) > 0:
+    # # Check if files exist. If not, skip.
+    # key0 = list(table_dict.keys())[0]
+    # if len(table_dict[key0]) > 0:
 
-        figs = amp_gain_freq_figures(table_dict, meta_dict,
-                                nant_per_figure=8,)
-        label = 'BLcal'
+    #     figs = amp_gain_freq_figures(table_dict, meta_dict,
+    #                             nant_per_figure=8,)
+    #     label = 'BLcal'
 
-        for i, fig in enumerate(figs):
+    #     for i, fig in enumerate(figs):
 
-            out_html_name = f"blcal_plotly_interactive_{i}.html"
-            fig.write_html(f"{output_folder}/{out_html_name}")
+    #         out_html_name = f"blcal_plotly_interactive_{i}.html"
+    #         fig.write_html(f"{output_folder}/{out_html_name}")
 
-            fig_names[f"{label} {i+1}"] = out_html_name
+    #         fig_names[f"{label} {i+1}"] = out_html_name
 
     # phase short gain cal
 
@@ -177,13 +179,12 @@ def make_all_cal_plots(folder, output_folder):
 
     if len(fig_names) > 0:
 
-        make_caltable_all_html_links(None, output_folder, fig_names, meta_dict_0)
+        make_caltable_all_html_links(output_folder, fig_names, meta_dict_0)
 
 
 
 def make_field_plots(config_filename, folder, output_folder,
                      save_fieldnames=False,
-                     flagging_sheet_link=None,
                      corrs=['XX', 'YY']):
     '''
     Make all scan plots into an HTML for each target.
@@ -302,7 +303,7 @@ def make_field_plots(config_filename, folder, output_folder,
         #                   f" Raise exception {exc}")
 
     # Make the linking files into the same folder.
-    make_all_html_links(flagging_sheet_link, output_folder, field_intents, meta_dict_0)
+    make_all_html_links(output_folder, field_intents, meta_dict_0)
 
 
 def make_all_quicklook_plots(folder="quicklook_imaging",
@@ -311,17 +312,11 @@ def make_all_quicklook_plots(folder="quicklook_imaging",
     # Generate the quicklook plots.
     target_dict, summary_filenames = make_quicklook_figures(folder, output_folder)
 
-    # Identify if these are continuum or line plots
-    # The line plots will tend to be larger, so we just want to
-    # decrease the number of fields per page for the lines.
-    # filenames = glob(f"{output_folder}/*.html")
-    # if any(["continuum" in filename for filename in filenames]):
-
     # Up this number as we're currently doing per sideband.
     # Only up to 4 images per field.
     fields_per_page = 10
 
-    make_quicklook_html_links("", output_folder, target_dict,
+    make_quicklook_html_links(output_folder, target_dict,
                               summary_filenames,
                               fields_per_page=fields_per_page)
 
@@ -337,9 +332,9 @@ def make_all_plots(config_filename=None,
                    folder_cal_qlimg="quicklook_calibrator_imaging",
                    output_folder_cal_qlimg="quicklook_calibrator_imaging_figures",
                    save_fieldnames=True,
-                   flagging_sheet_link=None,
                    corrs=['XX', 'YY'],
-                   manualflag_tablename='manualflag_check.html',
+                   logfile_name='casa_reduction.log',
+                   flagfile_name='manual_flags.txt'
                    ):
     '''
 
@@ -353,8 +348,6 @@ def make_all_plots(config_filename=None,
         Folder where the txt files for bandpass solutions per SPW are located.
     output_folder_BPs : str, optional
         Output folder to place the interactive HTML figures per bandpass SPW solution.
-    flagging_sheet_link : str, optional
-        Link to the sheet where manual flags can be added.
     corrs : list, optional
         Give which correlations to show in the plots. Default is ['XX', 'YY']. To show
         the cross terms, give: ['LL', 'RR', 'LR', 'RL'].
@@ -362,19 +355,32 @@ def make_all_plots(config_filename=None,
 
     ms_info_dict = {}
 
+    if config_filename is None:
+        # Search for a config filename in the folder we're working in
+        from glob import glob
+        config_filenames = list(glob("*.cfg"))
+        if len(config_filenames) == 0:
+            raise ValueError("Unable to find a config file. Specify manually.")
+        elif len(config_filenames) > 1:
+            print(f"Found multiple possible config filenames. Choosing the first one: {config_filenames[0]}")
+            config_filename = config_filenames[0]
+        else:
+            config_filename = config_filenames[0]
+
     this_config = read_config(config_filename)
     msname = this_config['myvis']
 
     ms_info_dict['vis'] = msname
 
-    make_html_homepage(".", ms_info_dict,
-                       flagging_sheet_link=flagging_sheet_link,
-                       manualflag_tablename=manualflag_tablename)
+    make_html_homepage(".", ms_info_dict)
+
+    make_html_casalog_page(".", logfile_name=logfile_name)
+
+    make_html_manualflag_page(".", flagfile_name=flagfile_name)
 
     make_field_plots(config_filename, folder_fields, output_folder_fields,
                      save_fieldnames=save_fieldnames,
-                     corrs=corrs,
-                     flagging_sheet_link=None)
+                     corrs=corrs)
 
     if os.path.exists(folder_cals):
         # Calibration plots
