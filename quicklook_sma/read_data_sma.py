@@ -238,7 +238,7 @@ def read_phaseshortgaincal_data_tables(inp_path, table_key="intphase_combinespw.
     return table_dict, meta_dict
 
 
-def read_ampgaincal_time_data_tables(inp_path, table_key="amp.gcal"):
+def read_ampgaincal_time_data_tables(inp_path, table_key="amp_final.gcal"):
     '''
     Read in the BP txt files for amp and phase.
     '''
@@ -275,7 +275,7 @@ def read_ampgaincal_time_data_tables(inp_path, table_key="amp.gcal"):
     return table_dict, meta_dict
 
 
-def read_ampgaincal_freq_data_tables(inp_path, table_key="amp.gcal"):
+def read_ampgaincal_freq_data_tables(inp_path, table_key="amp_final.gcal"):
     '''
     Read in the BP txt files for amp and phase.
     '''

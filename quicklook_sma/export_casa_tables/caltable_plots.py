@@ -136,10 +136,20 @@ def make_caltable_txt(ms_active, caltable_type):
 
 def make_all_caltable_txt(config_file):
 
+    from casatools import logsink
+
+    casalog = logsink()
+
     # Read in config settings:
     this_config = utils.read_config(config_file)
 
     msname = this_config['myvis']
 
     for key in CALTABLE_MAPPING:
-        make_caltable_txt(msname, key)
+        try:
+            make_caltable_txt(msname, key)
+        except Exception as exc:
+            casalog.post(f"Found exception for {key}")
+            casalog.post(f"{exc}")
+            continue
+
