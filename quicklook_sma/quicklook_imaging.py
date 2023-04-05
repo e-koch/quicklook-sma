@@ -411,7 +411,7 @@ def quicklook_continuum_imaging(config_filename,
                    robust=0.0,
                    niter=this_niter,
                    nsigma=this_nsigma,
-                #    nmajor=this_nmajor,
+                #    nmajor=this_nmajor,  # TODO: in newer casa versions, set this to avoid long runtimes
                    fastnoise=True,
                    imagename=this_imagename,
                    pblimit=this_pblim)
