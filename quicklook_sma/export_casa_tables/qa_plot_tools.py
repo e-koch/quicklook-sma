@@ -64,6 +64,9 @@ def make_qa_tables(config_file,
     # Get calibrator names:
     cal_fields = utils.get_calfields(this_config)
 
+    # This should always return all the science fields.
+    science_fields = utils.get_mosaicfields(this_config)
+
     # Determine the fields that are calibrators.
     tb.open(ms_name)
     is_calibrator = np.zeros((numFields,), dtype='bool')
@@ -81,6 +84,12 @@ def make_qa_tables(config_file,
         # Is the intent for calibration?
         if this_field in cal_fields.split(","):
             is_calibrator[ii] = True
+
+        # Add a check here for skipping some sources
+        # This is particularly needed as sources not identified in
+        # the cfg file will not have been calibrated.
+        if this_field not in science_fields.split(",":
+            has_data[ii] = False
 
     tb.close()
 
