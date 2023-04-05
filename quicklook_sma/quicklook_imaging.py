@@ -354,7 +354,7 @@ def quicklook_continuum_imaging(config_filename,
 
             approx_pbsize = 1.2 * (lambda_m / dish_diameter_m) * rad_to_arcsec
             # Add padding. This seems to be moderately underestimated.
-            approx_pbsize *= 2.
+            approx_pbsize *= 4.
             approx_imsize = synthutil.getOptimumSize(int(approx_pbsize / image_settings[2]['value']))
             imsizes.append(approx_imsize)
 
