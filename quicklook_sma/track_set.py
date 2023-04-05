@@ -38,6 +38,8 @@ from quicklook_sma.read_data_sma import (read_field_data_tables,
                                 read_phasegaincal_data_tables,
                                 read_blcal_freq_data_tables)
 
+from quicklook_sma.sma_flux_vals import plot_all_calfluxes
+
 
 def make_all_cal_plots(folder, output_folder):
 
@@ -377,7 +379,14 @@ def make_all_plots(config_filename=None,
 
     make_html_homepage(".", config_filename, ms_info_dict)
 
-    make_html_fluxes_page(".")
+    # Make flux monitoring vs. fitted flux plots:
+    fluxscale_tablename = f"{msname}.fluxscale_fits.csv"
+    if os.path.exists(fluxscale_tablename):
+        plotname_list = plot_all_calfluxes(fluxscale_tablename)
+    else:
+        plotname_list = []
+
+    make_html_fluxes_page(".", fluxcompare_plot_list=plotname_list)
 
     make_html_casalog_page(".", logfile_name=logfile_name)
 
