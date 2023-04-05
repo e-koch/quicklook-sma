@@ -88,7 +88,7 @@ def make_qa_tables(config_file,
         # Add a check here for skipping some sources
         # This is particularly needed as sources not identified in
         # the cfg file will not have been calibrated.
-        if this_field not in science_fields.split(",":
+        if this_field not in science_fields.split(","):
             has_data[ii] = False
 
     tb.close()
