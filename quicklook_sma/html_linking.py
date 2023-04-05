@@ -318,6 +318,15 @@ div.content {
     float: none;
   }
 }
+
+.box{
+    float:left;
+    margin-right:20px;
+}
+.clear{
+    clear:both;
+}
+
 '''
 
     return css_style_str
@@ -959,7 +968,8 @@ def make_html_reductionscript_page(folder, script_name='casa_reduction_script.py
           file=open(index_file, 'a'))
 
 
-def make_fluxfit_html_page(folder_name='fluxfit_plots'):
+def make_fluxfit_html_page(folder_name='fluxfit_plots',
+                           fluxcompare_plot_list=[]):
     '''
     Home page for the track with links to the weblogs, QA plots, etc.
     '''
@@ -979,7 +989,7 @@ def make_fluxfit_html_page(folder_name='fluxfit_plots'):
     # Loop through the plots and embed them here:
     from glob import glob
 
-    all_plotfiles = glob(f"{folder_name}/*.png")
+    all_plotfiles = glob(f"{folder_name}/*_fluxscale_fit.png")
 
     for plot_filename in all_plotfiles:
 
@@ -987,24 +997,41 @@ def make_fluxfit_html_page(folder_name='fluxfit_plots'):
 
         this_filename = plot_filename.split("/")[1]
 
+        field_name = this_filename.split("_")[0]
+
         html_string += '<div class="content" id="basic">\n'
         html_string += f'<h3>{this_filename}</h3>\n'
 
-
-        # Embed the weblog into the main page.
         html_string += '\n'
-        html_string += f'<iframe src="{plot_filename}" height="50%" width=90%>\n'
+        html_string += f'<iframe src="{plot_filename}" frameborder="0" scrolling="no" width="100%" height="512" align="left"> >\n'
         html_string += 'If you are seeing this, you need a browser understands IFrames.\n'
         html_string += '</iframe>\n'
 
         html_string += '</div>\n\n'
+
+        # See if the flux timeseries plot exists for this source:
+        for fluxcomp_plot in fluxcompare_plot_list:
+            if field_name not in fluxcomp_plot:
+                continue
+
+            html_string += '<div class="content" id="basic">\n'
+            html_string += f'<h3>{fluxcomp_plot}</h3>\n'
+
+            html_string += '\n'
+            html_string += f'<iframe src="{fluxcomp_plot}" frameborder="0" scrolling="no" width="100%" height="512" align="right"> >\n'
+            html_string += 'If you are seeing this, you need a browser understands IFrames.\n'
+            html_string += '</iframe>\n'
+
+            html_string += '</div>\n\n'
+
+            break
 
     html_string += make_html_suffix()
 
     return html_string
 
 
-def make_html_fluxes_page(folder, folder_name='fluxfit_plots'):
+def make_html_fluxes_page(folder, folder_name='fluxfit_plots', fluxcompare_plot_list=[]):
 
     mypath = Path(folder)
 
@@ -1022,5 +1049,5 @@ def make_html_fluxes_page(folder, folder_name='fluxfit_plots'):
     if index_file.exists():
         index_file.unlink()
 
-    print(make_fluxfit_html_page(folder_name),
+    print(make_fluxfit_html_page(folder_name, fluxcompare_plot_list=fluxcompare_plot_list=),
           file=open(index_file, 'a'))
