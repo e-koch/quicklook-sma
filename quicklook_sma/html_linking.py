@@ -24,7 +24,7 @@ def generate_webserver_track_link():
     track_links['Field QA Plots'] = "scan_plots_QAplots/index.html"
 
     track_links['Sci Images'] = "quicklook_imaging_figures/index.html"
-    track_links['Cal Images'] = "quicklook_calibrator_imaging/index.html"
+    track_links['Cal Images'] = "quicklook_calibrator_imaging_figures/index.html"
 
     track_links['Flux Scaling Plots'] = "flux_scaling.html"
 
