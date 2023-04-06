@@ -1049,5 +1049,5 @@ def make_html_fluxes_page(folder, folder_name='fluxfit_plots', fluxcompare_plot_
     if index_file.exists():
         index_file.unlink()
 
-    print(make_fluxfit_html_page(folder_name, fluxcompare_plot_list=fluxcompare_plot_list=),
+    print(make_fluxfit_html_page(folder_name, fluxcompare_plot_list=fluxcompare_plot_list),
           file=open(index_file, 'a'))
