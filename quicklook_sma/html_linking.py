@@ -1000,7 +1000,11 @@ def make_fluxfit_html_page(folder_name='fluxfit_plots',
         field_name = this_filename.split("_")[0]
 
         html_string += '<div class="content" id="basic">\n'
-        html_string += f'<h3>{this_filename}</h3>\n'
+        html_string += f'<h2>{field_name}</h2>\n'
+
+
+        html_string += '<div class="box" id="basic">\n'
+        html_string += f'<h3>Flux bootstrap and fit</h3>\n'
 
         html_string += '\n'
         html_string += f'<iframe src="{plot_filename}" frameborder="0" scrolling="no" width="100%" height="512" align="left"> >\n'
@@ -1014,8 +1018,8 @@ def make_fluxfit_html_page(folder_name='fluxfit_plots',
             if field_name not in fluxcomp_plot:
                 continue
 
-            html_string += '<div class="content" id="basic">\n'
-            html_string += f'<h3>{fluxcomp_plot}</h3>\n'
+            html_string += '<div class="box" id="basic">\n'
+            html_string += f'<h3>Avg. flux compared to flux monitoring</h3>\n'
 
             html_string += '\n'
             html_string += f'<iframe src="{fluxcomp_plot}" frameborder="0" scrolling="no" width="100%" height="512" align="right"> >\n'
@@ -1025,6 +1029,8 @@ def make_fluxfit_html_page(folder_name='fluxfit_plots',
             html_string += '</div>\n\n'
 
             break
+
+        html_string += '</div>\n\n'
 
     html_string += make_html_suffix()
 
