@@ -2,6 +2,7 @@
 import requests
 from datetime import datetime
 from glob import glob
+import os
 
 import numpy as np
 from astropy.table import Column, Table
